@@ -1,0 +1,219 @@
+<!doctype html>
+<html>
+<head>
+  <meta charset="utf-8">
+  <title>Login — Power Gym</title>
+  <link rel="stylesheet" href="style.css">
+  <script src="app.js" defer></script>
+</head>
+
+<body class="login-body">
+
+<div class="login-container">
+
+  <!-- ================= LEFT IMAGE SECTION ================= -->
+  <div class="login-graphic">
+    <div class="hero-content">
+      <h1>POWER GYM</h1>
+      <p>Train Strong • Manage Smart • Stay Fit</p>
+    </div>
+  </div>
+
+  <!-- ================= RIGHT LOGIN SECTION ================= -->
+  <div class="login-panel">
+    <div class="login-card fade-in-up float-card">
+
+      <h2 class="login-title">Login Portal</h2>
+      <p class="login-sub">
+        Admins manage the gym • Members view their details
+      </p>
+
+      <!-- TABS -->
+      <div class="login-tabs">
+        <button type="button" class="login-tab active" id="adminTab">Admin</button>
+        <button type="button" class="login-tab" id="memberTab">Member</button>
+      </div>
+
+      <!-- ================= ADMIN LOGIN (OTP) ================= -->
+      <form id="requestOtpForm">
+        <input type="hidden" name="role" value="admin">
+
+        <label class="small">Admin Email</label>
+        <input id="loginEmail" type="email" placeholder="admin@example.com" required>
+
+        <button id="sendOtpBtn" type="submit" class="btn-block">
+          Send OTP
+        </button>
+      </form>
+
+      <div id="otpBox" style="display:none; margin-top:14px;">
+        <form id="verifyOtpForm">
+          <label class="small">OTP Code</label>
+          <input id="otpCode" type="text" placeholder="6-digit OTP" required>
+
+          <button id="verifyBtn" type="button" class="btn-block">
+            Verify & Continue
+          </button>
+        </form>
+      </div>
+
+      <!-- ================= MEMBER LOGIN ================= -->
+      <form id="memberLoginForm" style="display:none; margin-top:6px;">
+        <input type="hidden" name="role" value="member">
+
+        <label class="small">Member Email</label>
+        <input id="memberEmail" type="email" placeholder="you@example.com" required>
+
+        <label class="small">Password</label>
+        <input id="memberPassword" type="password" placeholder="••••••••" required>
+
+        <label class="small" style="display:flex;gap:6px;align-items:center;">
+          <input type="checkbox" id="rememberMe"> Remember me
+        </label>
+
+        <button id="memberLoginBtn" type="submit" class="btn-block">
+          Login as Member
+        </button>
+      </form>
+
+      <div class="small mt-10">
+        New member?
+        <a href="signup.html" style="color:#ff8a5c;text-decoration:none;">
+          Create an account
+        </a>
+      </div>
+
+    </div>
+  </div>
+
+</div>
+
+<!-- ================= SCRIPT ================= -->
+<script>
+  const ADMIN_EMAIL = "moolyas794@gmail.com";
+
+  const adminTab = document.getElementById('adminTab');
+  const memberTab = document.getElementById('memberTab');
+  const requestOtpForm = document.getElementById('requestOtpForm');
+  const otpBox = document.getElementById('otpBox');
+  const memberForm = document.getElementById('memberLoginForm');
+
+  // ===== TOAST =====
+  function showToast(msg, type="info"){
+    const t = document.createElement("div");
+    t.className = `toast ${type}`;
+    t.innerText = msg;
+    document.body.appendChild(t);
+    setTimeout(()=>t.classList.add("show"),100);
+    setTimeout(()=>{
+      t.classList.remove("show");
+      setTimeout(()=>t.remove(),400);
+    },3000);
+  }
+
+  // ===== TAB SWITCH =====
+  adminTab.onclick = () => {
+    adminTab.classList.add('active');
+    memberTab.classList.remove('active');
+    requestOtpForm.style.display = 'block';
+    otpBox.style.display = window.__otpSent ? 'block' : 'none';
+    memberForm.style.display = 'none';
+  };
+
+  memberTab.onclick = () => {
+    memberTab.classList.add('active');
+    adminTab.classList.remove('active');
+    requestOtpForm.style.display = 'none';
+    otpBox.style.display = 'none';
+    memberForm.style.display = 'block';
+  };
+
+  // ===== REQUEST OTP =====
+  requestOtpForm.addEventListener('submit', async e => {
+    e.preventDefault();
+    const email = loginEmail.value.trim().toLowerCase();
+
+    if(email !== ADMIN_EMAIL.toLowerCase()){
+      showToast("Only admin can login here","error");
+      return;
+    }
+
+    sendOtpBtn.innerText = "Sending...";
+    const res = await fetch(`${API}/auth/request_otp`,{
+      method:"POST",
+      headers:{"Content-Type":"application/json"},
+      body:JSON.stringify({email})
+    });
+
+    const json = await res.json();
+    if(!res.ok){
+      showToast(json.error || "OTP failed","error");
+      sendOtpBtn.innerText = "Send OTP";
+      return;
+    }
+
+    window.__otpSent = true;
+    otpBox.style.display = "block";
+    showToast("OTP sent successfully","success");
+    sendOtpBtn.innerText = "Resend OTP";
+  });
+
+  // ===== VERIFY OTP =====
+  verifyBtn.onclick = async () => {
+    const email = loginEmail.value.trim().toLowerCase();
+    const code = otpCode.value.trim();
+
+    const res = await fetch(`${API}/auth/verify_otp`,{
+      method:"POST",
+      headers:{"Content-Type":"application/json"},
+      body:JSON.stringify({email,code})
+    });
+
+    const json = await res.json();
+    if(!res.ok){
+      showToast(json.error || "OTP invalid","error");
+      return;
+    }
+
+    localStorage.setItem("gym_authenticated","1");
+    localStorage.setItem("gym_auth_email",email);
+    localStorage.setItem("gym_role","admin");
+    showToast("Welcome Admin 👑","success");
+    setTimeout(()=>location.href="/dashboard.html",800);
+  };
+
+  // ===== MEMBER LOGIN =====
+  const remembered = localStorage.getItem("remember_email");
+  if(remembered) memberEmail.value = remembered;
+
+  memberForm.addEventListener('submit', async e => {
+    e.preventDefault();
+    const email = memberEmail.value.trim().toLowerCase();
+    const password = memberPassword.value.trim();
+
+    const res = await fetch(`${API}/auth/login`,{
+      method:"POST",
+      headers:{"Content-Type":"application/json"},
+      body:JSON.stringify({email,password})
+    });
+
+    const json = await res.json();
+    if(!res.ok){
+      showToast(json.error || "Login failed","error");
+      return;
+    }
+
+    if(rememberMe.checked){
+      localStorage.setItem("remember_email",email);
+    }
+
+    localStorage.setItem("gym_authenticated","1");
+    localStorage.setItem("gym_auth_email",email);
+    localStorage.setItem("gym_role","member");
+    showToast("Welcome Member 💪","success");
+    setTimeout(()=>location.href="/dashboard.html",800);
+  });
+</script>
+
+</body>
+</html>

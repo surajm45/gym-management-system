@@ -1,0 +1,38 @@
+<!doctype html>
+<html>
+<head>
+  <meta charset="utf-8">
+  <title>Activity Log — Power Gym</title>
+  <link rel="stylesheet" href="style.css">
+  <script src="app.js" defer></script>
+</head>
+<body>
+
+<div class="page-content">
+  <script> requireAuth(); requireAdmin(); </script>
+
+  <h1>Activity Log</h1>
+  <p class="small">Recent system activities</p>
+
+  <div class="container card mt-10">
+    <ul id="logList"></ul>
+  </div>
+</div>
+
+<script>
+  const logs = JSON.parse(localStorage.getItem("gym_logs") || "[]");
+  const ul = document.getElementById("logList");
+
+  if(logs.length === 0){
+    ul.innerHTML = "<li class='small'>No activity yet.</li>";
+  } else {
+    logs.forEach(l => {
+      const li = document.createElement("li");
+      li.innerHTML = `<strong>${l.action}</strong><br><span class="small">${l.time}</span>`;
+      ul.appendChild(li);
+    });
+  }
+</script>
+
+</body>
+</html>

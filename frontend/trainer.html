@@ -1,0 +1,69 @@
+<!doctype html>
+<html>
+<head>
+  <meta charset="utf-8">
+  <title>Trainers — Power Gym</title>
+  <link rel="stylesheet" href="style.css">
+  <script src="app.js" defer></script>
+</head>
+<body>
+<div class="sidebar">
+  <div class="sidebar-header">
+    <h3>🏋️ POWER GYM</h3>
+    <button class="dark-toggle" onclick="toggleDarkMode()">🌙</button>
+  </div>
+  <div class="sidebar-nav">
+    <a href="index.html"><span class="icon">🏠</span> Home</a>
+    <a href="dashboard.html"><span class="icon">📊</span> Dashboard</a>
+    <a href="members.html"><span class="icon">👥</span> Members</a>
+    <a href="trainer.html"><span class="icon">🏅</span> Trainers</a>
+    <a href="equipment.html"><span class="icon">🧰</span> Equipment</a>
+    <a href="plans.html"><span class="icon">📦</span> Plans</a>
+    <a href="payments.html"><span class="icon">💳</span> Payments</a>
+    <a href="attendance.html"><span class="icon">📝</span> Attendance</a>
+    <a href="#" onclick="logout()"><span class="icon">🚪</span> Logout</a>
+  </div>
+</div>
+
+<div class="page-content">
+  <script> requireAuth(); </script>
+  <script> requireAdmin(); </script>
+
+  <div class="header-row">
+    <h1>Trainers</h1>
+    <span class="badge">Staff</span>
+  </div>
+
+  <div class="container card">
+    <h3>Add Trainer</h3>
+    <form id="trainerForm">
+      <input name="name" placeholder="Trainer name" required>
+      <input name="specialization" placeholder="Specialization" required>
+      <input name="salary" placeholder="Salary" required>
+      <button type="submit">Add Trainer</button>
+    </form>
+
+    <!-- ===== UI/UX ADDITION (SAFE) ===== -->
+    <p id="trainerMsg" class="small mt-10"></p>
+    <!-- ================================= -->
+  </div>
+
+  <div class="container mt-10 card">
+    <h3>All Trainers</h3>
+    <table id="trainersTable"><thead></thead><tbody></tbody></table>
+  </div>
+</div>
+
+<!-- ===== UI/UX ADDITION (SAFE) ===== -->
+<script>
+  (function(){
+    const f=document.getElementById("trainerForm");
+    const m=document.getElementById("trainerMsg");
+    if(!f||!m) return;
+    f.addEventListener("submit",()=>m.innerText="Adding trainer...");
+  })();
+</script>
+<!-- ================================= -->
+
+</body>
+</html>

@@ -1,0 +1,141 @@
+<!doctype html>
+<html>
+<head>
+  <meta charset="utf-8">
+  <title>Payments — Power Gym</title>
+  <link rel="stylesheet" href="style.css">
+  <script src="app.js" defer></script>
+</head>
+<body>
+<div class="sidebar">
+  <div class="sidebar-header">
+    <h3>🏋️ POWER GYM</h3>
+    <button class="dark-toggle" onclick="toggleDarkMode()">🌙</button>
+  </div>
+  <div class="sidebar-nav">
+    <a href="index.html"><span class="icon">🏠</span> Home</a>
+    <a href="dashboard.html"><span class="icon">📊</span> Dashboard</a>
+    <a href="members.html"><span class="icon">👥</span> Members</a>
+    <a href="trainer.html"><span class="icon">🏅</span> Trainers</a>
+    <a href="equipment.html"><span class="icon">🧰</span> Equipment</a>
+    <a href="plans.html"><span class="icon">📦</span> Plans</a>
+    <a href="payments.html"><span class="icon">💳</span> Payments</a>
+    <a href="attendance.html"><span class="icon">📝</span> Attendance</a>
+    <a href="#" onclick="logout()"><span class="icon">🚪</span> Logout</a>
+  </div>
+</div>
+
+<div class="page-content">
+  <script> requireAuth(); </script>
+  <script> requireAdmin(); </script>
+
+  <div class="header-row">
+    <h1>Payments</h1>
+    <span class="badge">Billing</span>
+  </div>
+
+  <!-- ================= ADD PAYMENT ================= -->
+  <div class="container card">
+    <h3>Add Payment</h3>
+    <form id="paymentForm">
+      <input name="member_id" placeholder="Member ID" required>
+      <input name="plan_id" placeholder="Plan ID (optional)">
+      <input name="amount" placeholder="Amount" required>
+      <input name="method" placeholder="Method (Cash / Card / UPI)">
+      <button type="submit">Add Payment</button>
+    </form>
+
+    <p id="paymentMsg" class="small mt-10"></p>
+  </div>
+
+  <!-- ================= PAYMENTS LIST ================= -->
+  <div class="container mt-10 card">
+    <div class="header-row" style="margin-bottom:8px;">
+      <h3>All Payments</h3>
+      <div class="small">Search, export & manage payments</div>
+    </div>
+
+    <!-- 🔍 SEARCH -->
+    <input
+      type="text"
+      id="paymentSearch"
+      placeholder="Search by member, plan, method, amount..."
+      style="margin-bottom:10px;"
+    >
+
+    <!-- 📤 EXPORT -->
+    <button id="exportPaymentsBtn" style="margin-bottom:10px;">
+      Export Payments to CSV
+    </button>
+
+    <table id="paymentsTable">
+      <thead></thead>
+      <tbody></tbody>
+    </table>
+
+    <div id="emptyPayments" class="small mt-10" style="display:none;">
+      No payments found.
+    </div>
+  </div>
+</div>
+
+<!-- ================= SCRIPT ================= -->
+<script>
+  // UX feedback on add
+  (function(){
+    const f = document.getElementById("paymentForm");
+    const m = document.getElementById("paymentMsg");
+    if(f && m){
+      f.addEventListener("submit", () => {
+        m.innerText = "Recording payment...";
+      });
+    }
+  })();
+
+  // 🔍 Live payment search
+  document.getElementById("paymentSearch").addEventListener("keyup", function(){
+    const value = this.value.toLowerCase();
+    const rows = document.querySelectorAll("#paymentsTable tbody tr");
+    let visible = 0;
+
+    rows.forEach(row => {
+      const text = row.innerText.toLowerCase();
+      const show = text.includes(value);
+      row.style.display = show ? "" : "none";
+      if(show) visible++;
+    });
+
+    document.getElementById("emptyPayments").style.display =
+      visible === 0 ? "block" : "none";
+  });
+
+  // 📤 EXPORT PAYMENTS TO CSV
+  document.getElementById("exportPaymentsBtn").addEventListener("click", function(){
+    const rows = document.querySelectorAll("#paymentsTable tr");
+    if(!rows.length){
+      alert("No payments to export");
+      return;
+    }
+
+    let csv = [];
+    rows.forEach(row => {
+      const cols = row.querySelectorAll("th, td");
+      let rowData = [];
+      cols.forEach(col => {
+        rowData.push('"' + col.innerText.replace(/"/g,'""') + '"');
+      });
+      csv.push(rowData.join(","));
+    });
+
+    const blob = new Blob([csv.join("\n")], { type: "text/csv" });
+    const url = URL.createObjectURL(blob);
+    const a = document.createElement("a");
+    a.href = url;
+    a.download = "payments.csv";
+    a.click();
+    URL.revokeObjectURL(url);
+  });
+</script>
+
+</body>
+</html>

@@ -1,0 +1,55 @@
+<!doctype html>
+<html>
+<head>
+  <meta charset="utf-8">
+  <title>Settings — Power Gym</title>
+  <link rel="stylesheet" href="style.css">
+  <script src="app.js" defer></script>
+</head>
+<body>
+
+<div class="page-content">
+  <script> requireAuth(); requireAdmin(); </script>
+
+  <h1>Settings</h1>
+
+  <div class="container card">
+    <label>Gym Name</label>
+    <input id="gymName">
+
+    <label>Currency</label>
+    <select id="currency">
+      <option value="₹">₹ INR</option>
+      <option value="$">$ USD</option>
+    </select>
+
+    <button onclick="saveSettings()">Save Settings</button>
+    <button class="danger mt-10" onclick="resetSystem()">Reset System</button>
+  </div>
+</div>
+
+<script>
+  document.getElementById("gymName").value =
+    localStorage.getItem("gym_name") || "Power Gym";
+
+  document.getElementById("currency").value =
+    localStorage.getItem("gym_currency") || "₹";
+
+  function saveSettings(){
+    localStorage.setItem("gym_name", gymName.value);
+    localStorage.setItem("gym_currency", currency.value);
+    logActivity("Settings updated");
+    alert("Settings saved");
+  }
+
+  function resetSystem(){
+    if(confirm("This will clear all local data. Continue?")){
+      localStorage.clear();
+      alert("System reset");
+      location.href = "login.html";
+    }
+  }
+</script>
+
+</body>
+</html>

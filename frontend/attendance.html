@@ -1,0 +1,157 @@
+<!doctype html>
+<html>
+<head>
+  <meta charset="utf-8">
+  <title>Attendance — Power Gym</title>
+  <link rel="stylesheet" href="style.css">
+  <script src="app.js" defer></script>
+</head>
+<body>
+<div class="sidebar">
+  <div class="sidebar-header">
+    <h3>🏋️ POWER GYM</h3>
+    <button class="dark-toggle" onclick="toggleDarkMode()">🌙</button>
+  </div>
+  <div class="sidebar-nav">
+    <a href="index.html"><span class="icon">🏠</span> Home</a>
+    <a href="dashboard.html"><span class="icon">📊</span> Dashboard</a>
+    <a href="members.html"><span class="icon">👥</span> Members</a>
+    <a href="trainer.html"><span class="icon">🏅</span> Trainers</a>
+    <a href="equipment.html"><span class="icon">🧰</span> Equipment</a>
+    <a href="plans.html"><span class="icon">📦</span> Plans</a>
+    <a href="payments.html"><span class="icon">💳</span> Payments</a>
+    <a href="attendance.html"><span class="icon">📝</span> Attendance</a>
+    <a href="#" onclick="logout()"><span class="icon">🚪</span> Logout</a>
+  </div>
+</div>
+
+<div class="page-content">
+  <script> requireAuth(); </script>
+  <script> requireAdmin(); </script>
+
+  <div class="header-row">
+    <h1>Attendance</h1>
+    <span class="badge">Daily Tracking</span>
+  </div>
+
+  <!-- ================= MARK ATTENDANCE ================= -->
+  <div class="container card">
+    <h3>Mark Attendance</h3>
+    <form id="attendanceForm">
+      <input name="member_id" placeholder="Member ID" required>
+      <select name="status">
+        <option value="Present">Present</option>
+        <option value="Absent">Absent</option>
+      </select>
+      <button type="submit">Submit Attendance</button>
+    </form>
+
+    <p id="attendanceMsg" class="small mt-10"></p>
+  </div>
+
+  <!-- ================= ATTENDANCE RECORDS ================= -->
+  <div class="container card mt-10">
+    <div class="header-row" style="margin-bottom:8px;">
+      <h3>Attendance Records</h3>
+      <div class="small">Search, filter & export attendance</div>
+    </div>
+
+    <!-- 🔍 SEARCH -->
+    <input
+      type="text"
+      id="attendanceSearch"
+      placeholder="Search by member or status..."
+      style="margin-bottom:10px;"
+    >
+
+    <!-- 📅 DATE FILTER -->
+    <input
+      type="date"
+      id="attendanceDate"
+      style="margin-bottom:10px;"
+    >
+
+    <!-- 📤 EXPORT -->
+    <button id="exportAttendanceBtn" style="margin-bottom:10px;">
+      Export Attendance to CSV
+    </button>
+
+    <table id="attendanceTable">
+      <thead></thead>
+      <tbody></tbody>
+    </table>
+
+    <div id="attendanceEmpty" class="small mt-10" style="display:none;">
+      No attendance records found.
+    </div>
+  </div>
+</div>
+
+<!-- ================= SCRIPT ================= -->
+<script>
+  // UX feedback
+  (function(){
+    const f = document.getElementById("attendanceForm");
+    const m = document.getElementById("attendanceMsg");
+    if(f && m){
+      f.addEventListener("submit", ()=> {
+        m.innerText = "Recording attendance...";
+      });
+    }
+  })();
+
+  // 🔍 SEARCH + DATE FILTER
+  function filterAttendance(){
+    const q = document.getElementById("attendanceSearch").value.toLowerCase();
+    const d = document.getElementById("attendanceDate").value;
+    const rows = document.querySelectorAll("#attendanceTable tbody tr");
+
+    let visible = 0;
+    rows.forEach(row => {
+      const text = row.innerText.toLowerCase();
+      const dateCell = row.children[2]?.innerText || "";
+      const match =
+        text.includes(q) &&
+        (!d || dateCell.includes(d));
+
+      row.style.display = match ? "" : "none";
+      if(match) visible++;
+    });
+
+    document.getElementById("attendanceEmpty").style.display =
+      visible === 0 ? "block" : "none";
+  }
+
+  document.getElementById("attendanceSearch").addEventListener("keyup", filterAttendance);
+  document.getElementById("attendanceDate").addEventListener("change", filterAttendance);
+
+  // 📤 EXPORT CSV
+  document.getElementById("exportAttendanceBtn").addEventListener("click", function(){
+    const rows = document.querySelectorAll("#attendanceTable tr");
+    if(!rows.length){
+      alert("No attendance to export");
+      return;
+    }
+
+    let csv = [];
+    rows.forEach(row => {
+      const cols = row.querySelectorAll("th, td");
+      let data = [];
+      cols.forEach(col => {
+        data.push('"' + col.innerText.replace(/"/g,'""') + '"');
+      });
+      csv.push(data.join(","));
+    });
+
+    const blob = new Blob([csv.join("\n")], { type: "text/csv" });
+    const url = URL.createObjectURL(blob);
+    const a = document.createElement("a");
+    a.href = url;
+    a.download = "attendance.csv";
+    a.click();
+    URL.revokeObjectURL(url);
+  });
+</script>
+
+</body>
+</html>

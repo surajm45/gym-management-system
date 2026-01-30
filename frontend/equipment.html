@@ -1,0 +1,78 @@
+<!doctype html>
+<html>
+<head>
+  <meta charset="utf-8">
+  <title>Equipment — Power Gym</title>
+  <link rel="stylesheet" href="style.css">
+  <script src="app.js" defer></script>
+</head>
+<body>
+<div class="sidebar">
+  <div class="sidebar-header">
+    <h3>🏋️ POWER GYM</h3>
+    <button class="dark-toggle" onclick="toggleDarkMode()">🌙</button>
+  </div>
+  <div class="sidebar-nav">
+    <a href="index.html"><span class="icon">🏠</span> Home</a>
+    <a href="dashboard.html"><span class="icon">📊</span> Dashboard</a>
+    <a href="members.html"><span class="icon">👥</span> Members</a>
+    <a href="trainer.html"><span class="icon">🏅</span> Trainers</a>
+    <a href="equipment.html"><span class="icon">🧰</span> Equipment</a>
+    <a href="plans.html"><span class="icon">📦</span> Plans</a>
+    <a href="payments.html"><span class="icon">💳</span> Payments</a>
+    <a href="attendance.html"><span class="icon">📝</span> Attendance</a>
+    <a href="#" onclick="logout()"><span class="icon">🚪</span> Logout</a>
+  </div>
+</div>
+
+<div class="page-content">
+  <script> requireAuth(); </script>
+  <script> requireAdmin(); </script>
+
+  <div class="header-row">
+    <h1>Equipment</h1>
+    <span class="badge">Inventory</span>
+  </div>
+
+  <div class="container card">
+    <h3>Add Equipment</h3>
+    <form id="equipmentForm">
+      <input name="name" placeholder="Equipment name" required>
+      <input name="category" placeholder="Category" required>
+      <input name="quantity" placeholder="Quantity" type="number" required>
+      <input name="condition" placeholder="Condition (New/Good/Fair)" required>
+      <div class="text-right">
+        <button type="submit">Add Equipment</button>
+      </div>
+    </form>
+
+    <!-- ===== UI/UX ADDITION (SAFE) ===== -->
+    <p id="equipmentMsg" class="small mt-10"></p>
+    <!-- ================================= -->
+  </div>
+
+  <div class="container mt-10 card">
+    <h3>All Equipment</h3>
+    <table id="equipmentTable"><thead></thead><tbody></tbody></table>
+  </div>
+</div>
+
+<!-- ======================================================
+     ===== UI/UX ADDITIONS (SAFE – NO ORIGINAL CODE TOUCHED)
+     ====================================================== -->
+<script>
+  // UX feedback only, does NOT change submission logic
+  (function(){
+    const form = document.getElementById("equipmentForm");
+    const msg  = document.getElementById("equipmentMsg");
+    if(!form || !msg) return;
+
+    form.addEventListener("submit", function(){
+      msg.innerText = "Saving equipment details...";
+    });
+  })();
+</script>
+<!-- ====================================================== -->
+
+</body>
+</html>

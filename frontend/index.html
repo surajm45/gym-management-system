@@ -1,0 +1,75 @@
+<!doctype html>
+<html>
+<head>
+  <meta charset="utf-8">
+  <title>Gym Admin - Home</title>
+  <link rel="stylesheet" href="style.css">
+  <script src="app.js" defer></script>
+</head>
+<body>
+
+<div class="sidebar">
+  <div class="sidebar-header">
+    <h3>🏋️ POWER GYM</h3>
+    <button class="dark-toggle" onclick="toggleDarkMode()">🌙</button>
+  </div>
+  <div class="sidebar-nav">
+    <a href="index.html"><span class="icon">🏠</span> Home</a>
+    <a href="dashboard.html"><span class="icon">📊</span> Dashboard</a>
+    <a href="members.html"><span class="icon">👥</span> Members</a>
+    <a href="trainer.html"><span class="icon">🏅</span> Trainers</a>
+    <a href="equipment.html"><span class="icon">🧰</span> Equipment</a>
+    <a href="plans.html"><span class="icon">📦</span> Plans</a>
+    <a href="payments.html"><span class="icon">💳</span> Payments</a>
+    <a href="attendance.html"><span class="icon">📝</span> Attendance</a>
+    <a href="#" onclick="logout()"><span class="icon">🚪</span> Logout</a>
+  </div>
+</div>
+
+<div class="page-content">
+  <script> requireAuth(); </script>
+
+  <div class="header-row">
+    <h1>Welcome</h1>
+    <div class="small">
+      Logged in as <strong id="homeUserEmail"></strong>
+    </div>
+  </div>
+
+  <div class="card-grid">
+    <div class="card">
+      <div class="small">Manage Members</div>
+      <p class="small">Add, update and track all gym members in one place.</p>
+      <button class="mt-10" onclick="location.href='members.html'">Go to Members</button>
+    </div>
+    <div class="card">
+      <div class="small">Track Payments</div>
+      <p class="small">Record subscriptions, renewals and payment history.</p>
+      <button class="mt-10" onclick="location.href='payments.html'">Go to Payments</button>
+    </div>
+    <div class="card">
+      <div class="small">Attendance</div>
+      <p class="small">Mark daily check-ins to monitor member activity.</p>
+      <button class="mt-10" onclick="location.href='attendance.html'">Go to Attendance</button>
+    </div>
+    <div class="card">
+      <div class="small">Equipment</div>
+      <p class="small">Maintain inventory and condition of all gym equipment.</p>
+      <button class="mt-10" onclick="location.href='equipment.html'">Go to Equipment</button>
+    </div>
+  </div>
+
+  <!-- ===== UI/UX ADDITION (SAFE) ===== -->
+  <div class="small mt-10">
+    Use the quick cards above to manage daily gym operations efficiently.
+  </div>
+  <!-- ================================= -->
+</div>
+
+<script>
+  document.getElementById("homeUserEmail").innerText =
+    localStorage.getItem("gym_auth_email") || "";
+</script>
+
+</body>
+</html>

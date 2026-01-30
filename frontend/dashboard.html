@@ -1,0 +1,188 @@
+<!doctype html>
+<html>
+<head>
+  <meta charset="utf-8">
+  <title>Dashboard — Power Gym</title>
+  <link rel="stylesheet" href="style.css">
+  <script src="app.js" defer></script>
+
+  <!-- 📊 Chart.js CDN -->
+  <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+</head>
+<body>
+<div class="sidebar">
+  <div class="sidebar-header">
+    <h3>🏋️ POWER GYM</h3>
+    <button class="dark-toggle" onclick="toggleDarkMode()">🌙</button>
+  </div>
+  <div class="sidebar-nav">
+    <a href="index.html"><span class="icon">🏠</span> Home</a>
+    <a href="dashboard.html"><span class="icon">📊</span> Dashboard</a>
+    <a href="members.html"><span class="icon">👥</span> Members</a>
+    <a href="trainer.html"><span class="icon">🏅</span> Trainers</a>
+    <a href="equipment.html"><span class="icon">🧰</span> Equipment</a>
+    <a href="plans.html"><span class="icon">📦</span> Plans</a>
+    <a href="payments.html"><span class="icon">💳</span> Payments</a>
+    <a href="attendance.html"><span class="icon">📝</span> Attendance</a>
+    <a href="#" onclick="logout()"><span class="icon">🚪</span> Logout</a>
+  </div>
+</div>
+
+<div class="page-content">
+  <script> requireAuth(); </script>
+
+  <!-- ================= HEADER WITH PROFILE ================= -->
+  <div class="header-row">
+    <h1>Dashboard</h1>
+
+    <div class="profile-menu">
+      <div class="profile-trigger" onclick="toggleProfile()">
+        👤 <span id="userEmail"></span>
+      </div>
+
+      <div class="profile-dropdown" id="profileDropdown">
+        <div class="small">
+          Role: <strong id="roleBadge"></strong>
+        </div>
+        <hr>
+        <button onclick="logout()">🚪 Logout</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- ================= QUICK ACTIONS ================= -->
+  <div class="card-grid">
+    <div class="card">
+      <div class="small">➕ Quick Action</div>
+      <button onclick="location.href='members.html'">Add Member</button>
+    </div>
+    <div class="card">
+      <div class="small">💳 Quick Action</div>
+      <button onclick="location.href='payments.html'">Add Payment</button>
+    </div>
+  </div>
+
+  <!-- ================= STATS ================= -->
+  <div class="card-grid mt-10">
+    <div class="card">
+      <div class="small">👥 Members</div>
+      <div id="totalMembers" class="stat-number">—</div>
+    </div>
+    <div class="card">
+      <div class="small">🏅 Trainers</div>
+      <div id="totalTrainers" class="stat-number">—</div>
+    </div>
+    <div class="card">
+      <div class="small">📦 Plans</div>
+      <div id="totalPlans" class="stat-number">—</div>
+    </div>
+    <div class="card">
+      <div class="small">🧰 Equipment</div>
+      <div id="totalEquipment" class="stat-number">—</div>
+    </div>
+  </div>
+
+  <div class="small mt-10">
+    Live statistics fetched from backend REST APIs.
+  </div>
+
+  <!-- ================= CHARTS ================= -->
+  <div class="card-grid mt-10">
+    <div class="card">
+      <h3>Members vs Trainers</h3>
+      <canvas id="membersChart" height="200"></canvas>
+    </div>
+
+    <div class="card">
+      <h3>Payments Overview</h3>
+      <canvas id="paymentsChart" height="200"></canvas>
+    </div>
+  </div>
+
+  <!-- ================= RECENT PAYMENTS ================= -->
+  <div class="container card mt-10">
+    <div class="header-row" style="margin-bottom:8px;">
+      <h3>Recent Payments</h3>
+      <div class="small">Latest transactions</div>
+    </div>
+
+    <table id="paymentsTable">
+      <thead></thead>
+      <tbody></tbody>
+    </table>
+
+    <div id="paymentsStatus" class="small mt-10">
+      Showing most recent payment records.
+    </div>
+  </div>
+</div>
+
+<!-- ================= SCRIPT ================= -->
+<script>
+(async function(){
+  const email = localStorage.getItem("gym_auth_email") || "";
+  const role  = localStorage.getItem("gym_role") || "member";
+
+  document.getElementById("userEmail").innerText = email;
+  document.getElementById("roleBadge").innerText =
+    role === "admin" ? "ADMIN" : "MEMBER";
+
+  try{
+    const [members, trainers, plans, equipment, payments] = await Promise.all([
+      fetch(`${API}/members`).then(r=>r.json()),
+      fetch(`${API}/trainers`).then(r=>r.json()),
+      fetch(`${API}/plans`).then(r=>r.json()),
+      fetch(`${API}/equipment`).then(r=>r.json()),
+      fetch(`${API}/payments`).then(r=>r.json())
+    ]);
+
+    document.getElementById("totalMembers").innerText = members.length;
+    document.getElementById("totalTrainers").innerText = trainers.length;
+    document.getElementById("totalPlans").innerText = plans.length;
+    document.getElementById("totalEquipment").innerText = equipment.length;
+
+    new Chart(document.getElementById("membersChart"), {
+      type: "bar",
+      data: {
+        labels: ["Members", "Trainers"],
+        datasets: [{
+          label: "Count",
+          data: [members.length, trainers.length]
+        }]
+      }
+    });
+
+    const amounts = payments.map(p => Number(p.amount || 0));
+    new Chart(document.getElementById("paymentsChart"), {
+      type: "bar",
+      data: {
+        labels: amounts.map((_,i)=>`Payment ${i+1}`),
+        datasets: [{
+          label: "Amount",
+          data: amounts
+        }]
+      }
+    });
+
+  }catch(e){
+    console.warn("Dashboard load error", e);
+  }
+
+  loadPayments();
+})();
+
+function toggleProfile(){
+  const d = document.getElementById("profileDropdown");
+  d.style.display = d.style.display === "block" ? "none" : "block";
+}
+
+document.addEventListener("click", function(e){
+  const pm = document.querySelector(".profile-menu");
+  if(pm && !pm.contains(e.target)){
+    document.getElementById("profileDropdown").style.display = "none";
+  }
+});
+</script>
+
+</body>
+</html>
